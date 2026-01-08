@@ -1,4 +1,4 @@
-# 🃏 Black Jack Web Game
+# 🃏 Jack Masters
 
 Welcome to the **Black Jack Web Game** repository, a web platform where users can register, log into their account, and play Black Jack with a progression system based on gameplay performance.  
 Each player can improve their profile, climb through tables with increasing difficulty, view statistics, and compete on leaderboards.
