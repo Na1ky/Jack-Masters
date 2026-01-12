@@ -85,7 +85,7 @@ Leaderboards display top players based on:
 2. Start **Apache** and **MySQL** from the XAMPP Control Panel
 3. Open `phpMyAdmin` and create the database
 4. Import any provided `.sql` file
-5. Configure credentials in the PHP configuration file (e.g. `config.php`)
+5. Configure credentials in the PHP configuration file (e.g. `php/database_management.php`)
 6. Visit:  
    `http://localhost/project-name/`
 
