@@ -52,17 +52,6 @@ The progression system rewards player performance:
   - Different difficulty
   - Different scoring
   - Separate leaderboards
-
-### Example of Table Requirements (customizable)
-
-| Table | Required Points |
-|---|---|
-| Base Table | 0 |
-| Intermediate Table | 100 |
-| Expert Table | 300 |
-| Master Table | 700 |
-| Elite Table | 1500 |
-
 ---
 
 ## 📊 Statistics and Leaderboards
