@@ -40,17 +40,6 @@ The application uses a **client-server** architecture with persistent storage th
 - **Server**: PHP
 - **Database**: MySQL for users, matches, and leaderboards
 
-### 📂 Main database tables (example schema)
-
-- `users`
-  - `id`, `username`, `password_hash`, `email`, `current_table`, `points`, `registration_date`
-
-- `matches`
-  - `id`, `user_id`, `result`, `points_variation`, `timestamp`
-
-- `leaderboard`
-  - `user_id`, `total_points`, `position`
-
 ---
 
 ## 🕹 Game System and Progression
