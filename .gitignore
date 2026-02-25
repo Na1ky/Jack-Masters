@@ -1,0 +1,17 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+
+# TypeScript build output
+backend/dist/
+frontend/dist/
+
+# Environment files (keep .env.example)
+backend/.env
+
+# Angular cache
+frontend/.angular/
+
+# OS
+.DS_Store
+Thumbs.db

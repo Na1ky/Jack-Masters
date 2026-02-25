@@ -100,3 +100,62 @@ Leaderboards display top players based on:
 ![Statistics](img/preview4.png)
 
 ---
+
+## 🆕 MEAN Multiplayer Edition
+
+The project now includes a modern MEAN-stack layer for multiplayer gameplay with real-time matchmaking and Socket.IO.
+
+### 🗂 New Structure
+
+```
+Jack-Masters/
+├── backend/      Node.js + Express + Socket.IO + Mongoose (TypeScript)
+├── frontend/     Angular standalone app
+└── ... (existing PHP app unchanged)
+```
+
+### 🚀 Running the Backend
+
+```bash
+cd backend
+npm install
+cp .env.example .env   # edit as needed
+npm run dev            # starts dev server on http://localhost:3000
+```
+
+**Environment variables** (see `backend/.env.example`):
+
+| Variable        | Default                 | Description                        |
+|-----------------|-------------------------|------------------------------------|
+| `PORT`          | `3000`                  | HTTP port                          |
+| `MONGODB_URI`   | *(unset)*               | Optional MongoDB connection string |
+| `CORS_ORIGIN`   | `http://localhost:4200` | Allowed frontend origin            |
+
+> **MongoDB is optional.** If `MONGODB_URI` is not set or connection fails, the backend runs in-memory (completed matches are not persisted).
+
+#### REST API
+
+| Method | Path                       | Description                       |
+|--------|----------------------------|-----------------------------------|
+| GET    | `/api/health`              | Health check                      |
+| POST   | `/api/auth/guest`          | Create guest session → `{token}`  |
+| POST   | `/api/matchmaking/enqueue` | Signal intent to queue (REST)     |
+
+Real matchmaking uses **Socket.IO events** (see `backend/src/socket/index.ts`).
+
+### 🚀 Running the Frontend
+
+```bash
+cd frontend
+npm install
+npm start   # Angular dev server on http://localhost:4200
+```
+
+### 🧪 Backend Tests
+
+```bash
+cd backend
+npm run build && npm test
+```
+
+---
