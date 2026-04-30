@@ -3,10 +3,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define("DBHOST", "sql108.infinityfree.com");
-define("DBUSER", "if0_41793987");
-define("DBPASS", "VSfiW5kIDDteRV");
-define("DBNAME", "if0_41793987_blackjack");
+// Prefer platform-provided environment variables (Render injects these at runtime).
+// Fall back to the previous values for local development only.
+define("DBHOST", getenv("DB_HOST") ?: "sql108.infinityfree.com");
+define("DBUSER", getenv("DB_USER") ?: "if0_41793987");
+define("DBPASS", getenv("DB_PASS") ?: "VSfiW5kIDDteRV");
+define("DBNAME", getenv("DB_NAME") ?: "if0_41793987_blackjack");
 
 function OpenDbConnection($dbName)
 {
@@ -370,7 +372,8 @@ function UpdatePlayer($connection, $sessionId, $email, $name, $surname, $newuser
         throw $e;
     }
 }
-function GetAllGames($connection, $Username) {
+function GetAllGames($connection, $Username)
+{
     $query = "SELECT * FROM games WHERE Username = ?";
 
     $stmt = $connection->prepare($query);
@@ -390,7 +393,8 @@ function GetAllGames($connection, $Username) {
     $stmt->close();
     return $rows;
 }
-function UpdateImage($connection, $user, $newImage){
+function UpdateImage($connection, $user, $newImage)
+{
     $query = "UPDATE players SET Image = ? WHERE Username = ?";
     $stmt = $connection->prepare($query);
     if (!$stmt) {
@@ -401,7 +405,8 @@ function UpdateImage($connection, $user, $newImage){
     $stmt->execute();
     $stmt->close();
 }
-function GetAllWin($connection, $user){
+function GetAllWin($connection, $user)
+{
     $query = "SELECT COUNT(*) as totalWins FROM games WHERE Username = ? AND Results LIKE ?";
 
     $stmt = $connection->prepare($query);
@@ -421,7 +426,8 @@ function GetAllWin($connection, $user){
     return $row['totalWins'];
 }
 
-function GetAllLose($connection, $user){
+function GetAllLose($connection, $user)
+{
     $query = "SELECT COUNT(*) as totalLose FROM games WHERE Username = ? AND Results LIKE ?";
 
     $stmt = $connection->prepare($query);
