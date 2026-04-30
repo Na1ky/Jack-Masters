@@ -9,7 +9,7 @@ try {
         throw new Exception("Nessuna sessione attiva.");
     }
 
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     DeleteSession($connectionn, $_SESSION["sessionId"]);
 
     session_unset();

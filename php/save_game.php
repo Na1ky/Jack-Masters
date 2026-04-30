@@ -16,7 +16,7 @@ try {
         throw new Exception("Devi giocare per accedere a questa pagina.");
     }
 
-    $connection = OpenDbConnection("blackjack");
+    $connection = OpenDbConnection(DBNAME);
 
     $player = GetPlayer($connection, $_SESSION["sessionId"]);
     if ($player === null) {
@@ -43,4 +43,3 @@ try {
         CloseDbConnection($connection);
     }
 }
-?>

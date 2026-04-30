@@ -7,7 +7,7 @@ if (isset($_SESSION["sessionId"])) {
 }
 
 try {
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     $levels = GetLevels($connectionn);
 } catch (Exception $ex) {
     header("Location: login.php?error=Errore " . $ex);

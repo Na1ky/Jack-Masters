@@ -9,7 +9,7 @@ try {
         throw new Exception("Compilare tutti i campi");
     }
 
-    $connection = OpenDbConnection("blackjack");
+    $connection = OpenDbConnection(DBNAME);
     InsertNewUser($connection, $_POST['Email'], $_POST['Password'], $_POST['Username']);
 
     header("Location: ../login.php?message=" . urlencode("Registrazione avvenuta con successo, ora puoi accedere"));
@@ -30,4 +30,3 @@ try {
         CloseDbConnection($connection);
     }
 }
-?>

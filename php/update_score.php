@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 header("Content-Type: application/json");
 
 try {
-    $connection = OpenDbConnection("blackjack");
+    $connection = OpenDbConnection(DBNAME);
 
     if (!isset($_SESSION["sessionId"])) {
         throw new Exception("Devi essere loggato per giocare");
@@ -29,7 +29,6 @@ try {
         "success" => true,
         "Fiches" => $giocatore["Fiches"]
     ]);
-
 } catch (Exception $ex) {
     echo json_encode([
         "success" => false,
@@ -41,4 +40,3 @@ try {
         CloseDbConnection($connection);
     }
 }
-?>

@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once("database_management.php");
 
 try {
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     $players = GetAllPlayers($connectionn);
 
     $data = [];
@@ -25,7 +25,8 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
-        "success" => false,"error" => $e->getMessage()
+        "success" => false,
+        "error" => $e->getMessage()
     ]);
 } finally {
     if (isset($connectionn)) {

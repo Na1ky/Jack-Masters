@@ -2,7 +2,7 @@
 session_start();
 require_once "php/database_management.php";
 try {
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     $currentTime = time();
     if (isset($_SESSION["expired"]) && $currentTime > $_SESSION["expired"] && isset($_SESSION["sessionId"])) {
         DeleteSession($connectionn, $_SESSION["sessionId"]);

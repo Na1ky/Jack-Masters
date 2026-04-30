@@ -12,9 +12,9 @@ try {
     if (!isset($_POST["email"]) || !isset($_POST["username"]) || !isset($_POST["oldUsername"])) {
         throw new Exception("Compilare i campi");
     }
-    
-    $connection = OpenDbConnection("blackjack");
-    
+
+    $connection = OpenDbConnection(DBNAME);
+
     if (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
         throw new Exception("Email non valida");
     }
@@ -40,7 +40,6 @@ try {
         exit;
     }
 } finally {
-    if(isset($connection))
+    if (isset($connection))
         CloseDbConnection($connection);
 }
-?>

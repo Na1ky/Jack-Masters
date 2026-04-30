@@ -7,9 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 try {
     if (!isset($_POST["newImage"]) || !isset($_POST["user"]))
         throw new Exception("Errore paramentri mancanti");
-    if(!isset($_SESSION["sessionId"]))
+    if (!isset($_SESSION["sessionId"]))
         throw new Exception("Devi essere loggato");
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     UpdateImage($connectionn, $_POST["user"], $_POST["newImage"]);
     echo json_encode(["success" => true]);
 } catch (Exception $ex) {
@@ -19,6 +19,6 @@ try {
     ]);
     exit;
 } finally {
-    if(isset($connectionn))
-    CloseDbConnection($connectionn);
+    if (isset($connectionn))
+        CloseDbConnection($connectionn);
 }

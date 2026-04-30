@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json');
 
 try {
-    $connection = OpenDbConnection("blackjack");
+    $connection = OpenDbConnection(DBNAME);
     $levels = GetLevels($connection);
     echo json_encode(["success" => true, "data" => $levels]);
 } catch (Exception $ex) {
@@ -19,4 +19,3 @@ try {
         CloseDbConnection($connection);
     }
 }
-?>

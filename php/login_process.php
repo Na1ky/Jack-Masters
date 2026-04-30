@@ -8,7 +8,7 @@ try {
         throw new Exception("Compilare tutti i campi");
     }
 
-    $connection = OpenDbConnection("blackjack");
+    $connection = OpenDbConnection(DBNAME);
     $user = Login($connection, $_POST['Email'], $_POST['Password']);
 
     if ($user != null) {

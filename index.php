@@ -9,7 +9,7 @@ $player = null;
 $levels = [];
 
 try {
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
     $currentTime = time();
     if (isset($_SESSION["sessionId"])) {
         if (isset($_SESSION["expired"]) && $currentTime > $_SESSION["expired"] && isset($_SESSION["sessionId"])) {

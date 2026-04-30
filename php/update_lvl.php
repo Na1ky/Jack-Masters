@@ -12,7 +12,7 @@ try {
     if (isset($_POST['newLevel'], $_POST['oldLevel'], $_SESSION['sessionId'])) {
         $newLevel = (int)$_POST['newLevel'];
         $oldLevel = (int)$_POST['oldLevel'];
-        $connection = OpenDbConnection("blackjack");
+        $connection = OpenDbConnection(DBNAME);
         UpdateLvl($connection, $_SESSION["sessionId"], $newLevel);
         echo json_encode(["success" => true, "message" => "Tavolo aggiornato con successo!"]);
     } else {
@@ -26,4 +26,3 @@ try {
         CloseDbConnection($connection);
     }
 }
-?>

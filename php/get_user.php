@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json');
 
 try {
-    $connectionn = OpenDbConnection("blackjack");
+    $connectionn = OpenDbConnection(DBNAME);
 
     if (!isset($_SESSION["sessionId"])) {
         http_response_code(401);

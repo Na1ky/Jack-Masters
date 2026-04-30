@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 if (isset($_SESSION["sessionId"])) {
     try {
-        $connectionn = OpenDbConnection("blackjack");
+        $connectionn = OpenDbConnection(DBNAME);
         $currentTime = time();
         if ($currentTime > $_SESSION["expired"] && isset($_SESSION["sessionId"])) {
             DeleteSession($connectionn, $_SESSION["sessionId"]);
