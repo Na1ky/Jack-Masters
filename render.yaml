@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: jack-masters
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Render auto-injects $PORT; the entrypoint script applies it to Apache
+    envVars:
+      - key: DB_HOST
+        sync: false          # set in Render dashboard
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false

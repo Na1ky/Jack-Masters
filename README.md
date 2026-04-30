@@ -74,20 +74,115 @@ Leaderboards display top players based on:
 
 ## 🖥 Setup & Installation
 
-### ✔ Requirements
+### ✔ Requirements (classic XAMPP)
 
 - XAMPP or equivalent environment (Apache + PHP + MySQL)
 - Modern browser
 
-### 🚀 Installation
+### 🚀 Installation (XAMPP)
 
 1. Copy or clone the project into the `htdocs/` directory of XAMPP
 2. Start **Apache** and **MySQL** from the XAMPP Control Panel
 3. Open `phpMyAdmin` and create the database
-4. Import any provided `.sql` file
-5. Configure credentials in the PHP configuration file (e.g. `php/database_management.php`)
-6. Visit:  
-   `http://localhost/project-name/`
+4. Import `db/blackjack_db.sql`
+5. Set DB credentials via environment variables (see [Environment Variables](#-environment-variables)) or they default to `root` / no password / `localhost`
+6. Visit `http://localhost/project-name/`
+
+---
+
+## 🐳 Docker – Local Development
+
+> **Requirements**: [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Na1ky/Jack-Masters.git
+cd Jack-Masters
+
+# 2. Start the app + database
+docker compose up --build
+
+# 3. Open in the browser
+#    http://localhost:8080
+```
+
+The `docker-compose.yml` automatically:
+- Builds the PHP 8.2 + Apache image
+- Starts a MariaDB 10.11 container called `db`
+- Imports `db/blackjack_db.sql` on first run
+- Mounts the source folder for live-editing
+
+To stop everything:
+
+```bash
+docker compose down          # keep database volume
+docker compose down -v       # also delete the database volume
+```
+
+---
+
+## ☁️ Deploy on Render (24/7)
+
+[Render](https://render.com) supports Docker-based web services and keeps them running continuously.
+
+### Step-by-step
+
+1. **Fork / push** this repository to your GitHub account.
+2. Go to [render.com](https://render.com) and sign up (free tier available).
+3. Click **New → Web Service** and connect your GitHub repository.
+4. Render detects `render.yaml` automatically.  
+   If the wizard asks, choose:
+   - **Environment**: `Docker`
+   - **Dockerfile path**: `./Dockerfile`
+5. Under **Environment Variables** (in the Render dashboard), add the three variables listed below.
+6. Click **Deploy** – Render builds the image and starts the container.
+7. Your app is live at `https://<service-name>.onrender.com` 🎉
+
+> **Note**: on the free tier, the service sleeps after ~15 minutes of inactivity and takes a few seconds to wake up on the next request. Upgrade to a paid plan for always-on behaviour.
+
+### Required external database
+
+Render Web Services do not include a persistent MySQL/MariaDB instance.  
+You need a managed database – recommended options:
+
+| Provider | Notes |
+|---|---|
+| **[PlanetScale](https://planetscale.com)** | MySQL-compatible, generous free tier |
+| **[Aiven](https://aiven.io)** | MySQL / MariaDB, free trial |
+| **[Railway](https://railway.app)** | MySQL add-on, easy setup |
+| **[Render PostgreSQL](https://render.com/docs/databases)** | ⚠ Postgres only – requires PHP `pdo_pgsql` and query changes |
+
+After creating the external database, import `db/blackjack_db.sql` using your provider's import tool or the MySQL CLI:
+
+```bash
+mysql -h <DB_HOST> -u <DB_USER> -p blackjack < db/blackjack_db.sql
+```
+
+---
+
+## 🔑 Environment Variables
+
+The application reads database credentials from the following environment variables.  
+If a variable is not set, the fallback (classic XAMPP default) is used.
+
+| Variable | Default | Description |
+|---|---|---|
+| `DB_HOST` | `localhost` | Hostname or IP of the MySQL/MariaDB server |
+| `DB_USER` | `root` | Database username |
+| `DB_PASS` | *(empty)* | Database password |
+
+Set them in the Render dashboard → **Environment** tab, or in a local `.env` file passed to Docker Compose.
+
+---
+
+## 💾 Persistence Notes
+
+| Concern | Details |
+|---|---|
+| **Database** | All user data, match history, and leaderboards are stored in MySQL. Use an external managed DB for production. |
+| **User avatars** | Avatar URLs are stored as URLs (e.g. Imgur links) – no file uploads to the server. No extra volume needed. |
+| **PHP sessions** | Sessions are stored on the filesystem inside the container. They are lost on container restart, which forces users to log in again. For multi-replica deployments, use a Redis session handler. |
+| **Static assets** | CSS, JS, and images are bundled in the container image – no persistent volume needed. |
 
 ---
 
