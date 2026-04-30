@@ -3,9 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define("DBHOST", "localhost");
-define("DBUSER", "root");
-define("DBPASS", "");
+define("DBHOST", getenv("DB_HOST") ?: "localhost");
+define("DBUSER", getenv("DB_USER") ?: "root");
+define("DBPASS", getenv("DB_PASS") ?: "");
 
 function OpenDbConnection($dbName)
 {
