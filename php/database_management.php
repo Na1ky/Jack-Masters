@@ -3,9 +3,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define("DBHOST", getenv("DB_HOST") ?: "localhost");
-define("DBUSER", getenv("DB_USER") ?: "root");
-define("DBPASS", getenv("DB_PASS") ?: "");
+define("DBHOST", "sql108.infinityfree.com");
+define("DBUSER", "if0_41793987");
+define("DBPASS", "VSfiW5kIDDteRV");
+define("DBNAME", "if0_41793987_blackjack");
 
 function OpenDbConnection($dbName)
 {
