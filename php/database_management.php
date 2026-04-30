@@ -3,22 +3,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load .env file if it exists (for InfinityFree and local development)
+require_once __DIR__ . '/env_loader.php';
+
 $envDbHost = getenv("DB_HOST");
 $envDbUser = getenv("DB_USER");
 $envDbPass = getenv("DB_PASS");
 $envDbName = getenv("DB_NAME");
+$envDbPort = getenv("DB_PORT");
 
-define("DBHOST", $envDbHost !== false && $envDbHost !== '' ? $envDbHost : "localhost");
+define("DBHOST", $envDbHost !== false && $envDbHost !== '' ? $envDbHost : "127.0.0.1");
 define("DBUSER", $envDbUser !== false && $envDbUser !== '' ? $envDbUser : "root");
 define("DBPASS", $envDbPass !== false ? $envDbPass : "");
 define("DBNAME", $envDbName !== false && $envDbName !== '' ? $envDbName : "blackjack");
+define("DBPORT", $envDbPort !== false && $envDbPort !== '' ? (int)$envDbPort : 3306);
 
 function OpenDbConnection($dbName)
 {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     try {
-        $connection = new mysqli(DBHOST, DBUSER, DBPASS, $dbName);
+        $connection = new mysqli(DBHOST, DBUSER, DBPASS, $dbName, DBPORT);
         $connection->set_charset("utf8");
         return $connection;
     } catch (mysqli_sql_exception $ex) {

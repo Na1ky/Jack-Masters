@@ -5,6 +5,7 @@ services:
       - "8080:80"
     environment:
       DB_HOST: db
+      DB_PORT: 3306
       DB_USER: blackjack
       DB_PASS: blackjack
       DB_NAME: blackjack

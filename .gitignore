@@ -1,0 +1,27 @@
+# Environment variables (local and production credentials)
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies (if needed in future)
+vendor/
+node_modules/
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+.tmp/

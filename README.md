@@ -125,6 +125,41 @@ docker compose down -v       # also delete the database volume
 
 ---
 
+## 🌐 Deploy on InfinityFree (Free hosting with MySQL)
+
+InfinityFree provides free PHP + MySQL hosting. It's a simple option if you don't need Docker.
+
+### Step-by-step
+
+1. **Sign up** at [infinityfree.com](https://infinityfree.com)
+2. **Create a new website** and note your:
+   - Database name (e.g., `if0_12345678_blackjack`)
+   - Database user (e.g., `if0_12345678`)
+   - Database password (provided or set by you)
+   - Database host (usually `sql1xx.infinityfree.com`)
+
+3. **Upload the project** to your InfinityFree account using FTP or File Manager.
+4. **Create a `.env` file** in the root directory with your InfinityFree credentials:
+
+   ```env
+   DB_HOST=sql1xx.infinityfree.com
+   DB_PORT=3306
+   DB_USER=if0_12345678
+   DB_PASS=YourDatabasePassword
+   DB_NAME=if0_12345678_blackjack
+   ```
+
+5. **Import the database** using the InfinityFree MySQL Manager:
+   - Go to **Files → Databases** in your InfinityFree panel
+   - Open **phpMyAdmin** for your database
+   - Click **Import** and select `db/blackjack_db.sql`
+
+6. **Access your site** at `https://your-domain.infinityfree.com`
+
+> **Important**: Keep the `.env` file secure. Do **not** commit it to GitHub. Use `.env.example` as a template for team members.
+
+---
+
 ## ☁️ Deploy on Render (24/7)
 
 [Render](https://render.com) supports Docker-based web services and keeps them running continuously.
@@ -173,7 +208,8 @@ If a variable is not set, the fallback (classic XAMPP default) is used.
 
 | Variable | Default | Description |
 |---|---|---|
-| `DB_HOST` | `localhost` | Hostname or IP of the MySQL/MariaDB server |
+| `DB_HOST` | `127.0.0.1` | Hostname or IP of the MySQL/MariaDB server |
+| `DB_PORT` | `3306` | Port of the MySQL/MariaDB server |
 | `DB_USER` | `root` | Database username |
 | `DB_PASS` | *(empty)* | Database password |
 | `DB_NAME` | `blackjack` | Database name |
