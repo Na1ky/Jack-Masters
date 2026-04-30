@@ -52,6 +52,7 @@ The progression system rewards player performance:
   - Different difficulty
   - Different scoring
   - Separate leaderboards
+
 ---
 
 ## 📊 Statistics and Leaderboards
@@ -106,7 +107,10 @@ docker compose up --build
 #    http://localhost:8080
 ```
 
+If you paste the snippet into Windows `cmd`, skip the `#` comment lines and open `http://localhost:8080` in your browser after the containers start.
+
 The `docker-compose.yml` automatically:
+
 - Builds the PHP 8.2 + Apache image
 - Starts a MariaDB 10.11 container called `db`
 - Imports `db/blackjack_db.sql` on first run
@@ -124,6 +128,8 @@ docker compose down -v       # also delete the database volume
 ## ☁️ Deploy on Render (24/7)
 
 [Render](https://render.com) supports Docker-based web services and keeps them running continuously.
+
+> **Important**: if you need the site online 24/24, use a paid Render web service. The free tier sleeps after inactivity and is not always-on.
 
 ### Step-by-step
 

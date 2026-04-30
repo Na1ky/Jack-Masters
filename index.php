@@ -4,6 +4,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$connectionn = null;
+$player = null;
+$levels = [];
+
 try {
     $connectionn = OpenDbConnection("blackjack");
     $currentTime = time();
@@ -19,9 +23,16 @@ try {
     }
     $levels = GetLevels($connectionn);
 } catch (Exception $ex) {
-    header("Location: index.php?error=" . $ex->getMessage());
+    // Previeni redirect loop - visualizza errore solo se non è già stato mostrato
+    if (!isset($_GET["error"])) {
+        header("Location: index.php?error=" . urlencode($ex->getMessage()));
+        exit;
+    }
+    $errorMessage = $ex->getMessage();
 } finally {
-    CloseDbConnection($connectionn);
+    if ($connectionn !== null) {
+        CloseDbConnection($connectionn);
+    }
 }
 ?>
 <!DOCTYPE html>
