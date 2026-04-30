@@ -176,6 +176,7 @@ If a variable is not set, the fallback (classic XAMPP default) is used.
 | `DB_HOST` | `localhost` | Hostname or IP of the MySQL/MariaDB server |
 | `DB_USER` | `root` | Database username |
 | `DB_PASS` | *(empty)* | Database password |
+| `DB_NAME` | `blackjack` | Database name |
 
 Set them in the Render dashboard → **Environment** tab, or in a local `.env` file passed to Docker Compose.
 
