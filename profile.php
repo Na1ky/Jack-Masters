@@ -41,7 +41,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-     <!-- Meta description for search engines and social media -->
+    <!-- Meta description for search engines and social media -->
     <meta name="description" content="Blackjack è un gioco di carte popolare. Ecco le tue statistiche">
     <meta name="keywords" content="Blackjack, gioco di carte, casinò, divertimento">
 
@@ -50,21 +50,21 @@ try {
     <meta property="og:description" content="Blackjack è un gioco di carte popolare. Ecco le tue statistiche">
     <meta property="og:image" content="img/logo.ico">
     <meta property="og:type" content="website">
-    
+
     <meta name="language" content="it">
     <title>BLACKJACK - Home</title>
     <link rel="icon" href="img/logo.png" type="image/x-icon">
-    
+
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" />
-    
+
     <!-- JQuery -->
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-    
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
     <!-- Custom -->
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/profile.css">

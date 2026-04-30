@@ -52,7 +52,7 @@ if (isset($_SESSION["sessionId"])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
     <!-- JQuery -->
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
 
     <!-- Custom -->
     <link rel="stylesheet" href="css/style.css" />
@@ -89,7 +89,7 @@ if (isset($_SESSION["sessionId"])) {
         data-fiches="<?= htmlspecialchars($player["Fiches"]) ?>"
         data-playerCards='<?= htmlspecialchars(json_encode($_SESSION['playerCards'] ?? [])) ?>'
         data-dealerCards='<?= htmlspecialchars(json_encode($_SESSION['dealerCards'] ?? [])) ?>'
-        data-Bet='<?=$_SESSION['Bet'] ?>'>
+        data-Bet='<?= $_SESSION['Bet'] ?>'>
         <!-- Bet Overlay -->
         <div id="overlay" class="d-flex flex-column justify-content-center align-items-center p-3 text-center" style="min-height: 100vh;">
             <div class="bet-input-container mb-4">

@@ -45,10 +45,10 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" />
-    
+
     <!-- JQuery -->
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-    
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/classification.css">
     <script src="js/script.js"></script>
@@ -66,11 +66,11 @@ try {
     <section class="container">
         <?php if (isset($_GET["message"])): ?>
             <script>
-                ShowAlert(<?=json_encode($_GET["message"]) ?>, "info");
+                ShowAlert(<?= json_encode($_GET["message"]) ?>, "info");
             </script>
         <?php elseif (isset($_GET["error"])): ?>
             <script>
-                ShowAlert(<?=json_encode($_GET["error"]) ?>, "danger");
+                ShowAlert(<?= json_encode($_GET["error"]) ?>, "danger");
             </script>
         <?php endif; ?>
     </section>

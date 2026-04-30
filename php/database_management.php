@@ -3,12 +3,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Prefer platform-provided environment variables (Render injects these at runtime).
-// Fall back to the previous values for local development only.
-define("DBHOST", getenv("DB_HOST") ?: "sql108.infinityfree.com");
-define("DBUSER", getenv("DB_USER") ?: "if0_41793987");
-define("DBPASS", getenv("DB_PASS") ?: "VSfiW5kIDDteRV");
-define("DBNAME", getenv("DB_NAME") ?: "if0_41793987_blackjack");
+define("DBHOST", "sql108.infinityfree.com");
+define("DBUSER", "if0_41793987");
+define("DBPASS", "VSfiW5kIDDteRV");
+define("DBNAME", "if0_41793987_blackjack");
 
 function OpenDbConnection($dbName)
 {
