@@ -1,7 +1,7 @@
 <?php
-require_once '../utils.php';
+require_once __DIR__ . '/../utils.php';
 initApi();
-require_once '../../php/database_management.php';
+require_once __DIR__ . '/../../php/database_management.php';
 
 try {
     $connection = OpenDbConnection(DBNAME);

@@ -1,5 +1,6 @@
 <?php
 function initApi() {
+    ini_set('display_errors', '0'); // Prevents PHP warnings from breaking JSON
     // CORS Headers per Vercel e Test Locali
     header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json; charset=UTF-8");
