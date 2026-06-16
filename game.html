@@ -1,30 +1,3 @@
-<?php
-include_once("php/database_management.php");
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-if (isset($_SESSION["sessionId"])) {
-    try {
-        $connectionn = OpenDbConnection(DBNAME);
-        $currentTime = time();
-        if ($currentTime > $_SESSION["expired"] && isset($_SESSION["sessionId"])) {
-            DeleteSession($connectionn, $_SESSION["sessionId"]);
-            session_unset();
-            session_destroy();
-            header("Location: index.php?error=Sessione scaduta");
-            exit;
-        }
-        $player = GetPlayer($connectionn, $_SESSION["sessionId"]);
-    } catch (Exception $ex) {
-        header("Location: index.php?error=" . $ex->getMessage());
-    } finally {
-        CloseDbConnection($connectionn);
-    }
-} else {
-    header("Location: login.php?error=Devi essere loggato per giocare!");
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="it">
 
@@ -32,13 +5,11 @@ if (isset($_SESSION["sessionId"])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Meta description for search engines and social media -->
     <meta name="description" content="Blackjack è un popolare gioco di carte." />
     <meta name="keywords" content="Blackjack, gioco di carte, casinò, divertimento" />
     <meta name="author" content="Il tuo nome o azienda" />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="BLACKJACK - Login" />
+    <meta property="og:title" content="BLACKJACK - GIOCO" />
     <meta property="og:description" content="Blackjack è un popolare gioco di carte. Accedi per iniziare a giocare e divertirti." />
     <meta property="og:image" content="img/logo.ico" />
     <meta property="og:type" content="website" />
@@ -58,6 +29,7 @@ if (isset($_SESSION["sessionId"])) {
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/game.css" />
     <script src="js/script.js" type="application/javascript"></script>
+    <script src="js/auth.js" type="application/javascript"></script>
     <script src="js/game.js" type="application/javascript"></script>
 </head>
 
@@ -67,35 +39,20 @@ if (isset($_SESSION["sessionId"])) {
     <div class="loader">
         <img id="img-loader" src="img/loader.gif" alt="Caricamento...">
     </div>
-    <!-- System messages -->
-    <section class="container">
-        <?php if (isset($_GET["message"])): ?>
-            <script>
-                ShowAlert(<?= json_encode($_GET["message"]) ?>, "info");
-            </script>
-        <?php elseif (isset($_GET["error"])): ?>
-            <script>
-                ShowAlert(<?= json_encode($_GET["error"]) ?>, "danger");
-            </script>
-        <?php endif; ?>
-    </section>
-
+    
     <div id="level-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50 d-none" style="z-index: 1050;"></div>
     <div id="level-message" class="position-fixed top-50 start-50 translate-middle rounded-3 text-center text-white fw-semibold px-4 py-3 shadow-lg d-none p-5">
         <span class="message-text"></span>
     </div>
 
-    <main class="bg-game"
-        data-fiches="<?= htmlspecialchars($player["Fiches"]) ?>"
-        data-playerCards='<?= htmlspecialchars(json_encode($_SESSION['playerCards'] ?? [])) ?>'
-        data-dealerCards='<?= htmlspecialchars(json_encode($_SESSION['dealerCards'] ?? [])) ?>'
-        data-Bet='<?= $_SESSION['Bet'] ?>'>
+    <!-- Rimuoviamo i data- attributi PHP e ci affidiamo al locale js/game.js -->
+    <main class="bg-game">
         <!-- Bet Overlay -->
         <div id="overlay" class="d-flex flex-column justify-content-center align-items-center p-3 text-center" style="min-height: 100vh;">
             <div class="bet-input-container mb-4">
                 <h2 class="text-center mb-3" id="current-table" style="color: gold; font-weight: bold; text-shadow: 1px 1px 4px black;"></h2>
                 <h5 class="text-white text-center mb-2">
-                    Punti correnti: <span style="color: gold;" id="current-score"><?= $player["Fiches"] ?></span>
+                    Punti correnti: <span style="color: gold;" id="current-score">0</span>
                 </h5>
                 <label for="bet-input" class="form-label text-white fs-5" id="lbl-bet">Inserisci la tua puntata</label>
                 <input type="number" id="bet-input" class="form-control-lg text-center" min="1">
@@ -131,9 +88,7 @@ if (isset($_SESSION["sessionId"])) {
 
             <!-- Profile -->
             <div id="profile-image" class="d-none d-lg-block">
-                <?php
-                echo "<img src='" . $player["Image"] . "' alt='Immagine Profilo' class='rounded-circle' width='150'>";
-                ?>
+                <img id="player-avatar" src="img/default.png" alt="Immagine Profilo" class="rounded-circle" width="150">
             </div>
 
             <!-- Score + btn -->

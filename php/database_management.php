@@ -23,7 +23,10 @@ function OpenDbConnection($dbName)
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     try {
-        $connection = new mysqli(DBHOST, DBUSER, DBPASS, $dbName, DBPORT);
+        $connection = mysqli_init();
+        // Set SSL verification to true
+        $connection->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, true);
+        $connection->real_connect(DBHOST, DBUSER, DBPASS, $dbName, DBPORT, NULL, MYSQLI_CLIENT_SSL);
         $connection->set_charset("utf8");
         return $connection;
     } catch (mysqli_sql_exception $ex) {
@@ -64,6 +67,39 @@ function Login($connection, $email, $password)
 
             $_SESSION['sessionId'] = $Session_id;
             $_SESSION["expired"] = time() + (40 * 60);
+            return $user;
+        }
+    }
+
+    return null;
+}
+
+function LoginApi($connection, $email, $password)
+{
+    $query = "SELECT * FROM users WHERE Email = ?";
+    $stmt = $connection->prepare($query);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+
+        if (password_verify($password, $user['Pwd'])) {
+
+            if ($user["SessionId"] != null) {
+                // Return error if already logged in? Or just override? Let's override for API.
+                // We will generate a new token
+            }
+
+            $Session_id = bin2hex(random_bytes(32)); // Generate secure random token
+
+            $query = "UPDATE users SET SessionId = ? WHERE Email = ?";
+            $stmt = $connection->prepare($query);
+            $stmt->bind_param("ss", $Session_id, $email);
+            $stmt->execute();
+
+            $user["SessionId"] = $Session_id;
             return $user;
         }
     }

@@ -1,36 +1,11 @@
-<?php
-session_start();
-require_once "php/database_management.php";
-try {
-    $connectionn = OpenDbConnection(DBNAME);
-    $currentTime = time();
-    if (isset($_SESSION["expired"]) && $currentTime > $_SESSION["expired"] && isset($_SESSION["sessionId"])) {
-        DeleteSession($connectionn, $_SESSION["sessionId"]);
-        session_unset();
-        session_destroy();
-        header("Location: classification.php?error=Sessione scaduta");
-        exit;
-    }
-    if (isset($_SESSION["sessionId"]))
-        $player = GetPlayer($connectionn, $_SESSION["sessionId"]);
-} catch (Exception $ex) {
-    header("Location: classification.php?error=Errore: " . $ex->getMessage());
-} finally {
-    CloseDbConnection($connectionn);
-}
-?>
 <!DOCTYPE html>
 <html lang="it">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Meta description for search engines and social media -->
     <meta name="description" content="Blackjack è un gioco di carte popolare. Scopri la classifica!">
     <meta name="keywords" content="Blackjack, gioco di carte, casinò, divertimento">
-
-    <!-- Open Graph -->
     <meta property="og:title" content="BLACKJACK - Home">
     <meta property="og:description" content="Blackjack è un gioco di carte popolare. Scopri la classifica!">
     <meta property="og:image" content="img/logo.ico">
@@ -52,6 +27,7 @@ try {
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/classification.css">
     <script src="js/script.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/classification.js"></script>
 
 </head>
@@ -62,24 +38,11 @@ try {
         <img id="img-loader" src="img/loader.gif" alt="Caricamento...">
     </div>
 
-    <!-- System messages -->
-    <section class="container">
-        <?php if (isset($_GET["message"])): ?>
-            <script>
-                ShowAlert(<?= json_encode($_GET["message"]) ?>, "info");
-            </script>
-        <?php elseif (isset($_GET["error"])): ?>
-            <script>
-                ShowAlert(<?= json_encode($_GET["error"]) ?>, "danger");
-            </script>
-        <?php endif; ?>
-    </section>
-
     <header>
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
+                <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
                     <img src="img/logo.png" alt="Logo Blackjack" width="32" height="32" />
                     <span class="site-title">BLACK JACK</span>
                 </a>
@@ -91,28 +54,7 @@ try {
 
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav ms-auto align-items-center gap-3">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="game.php">Gioca</a></li>
-                        <li class="nav-item"><a class="nav-link" href="classification.php">Classifica</a></li>
-                        <?php if (!isset($_SESSION["sessionId"])): ?>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-success btn-sm px-3" href="login.php">Accedi</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-success btn-sm px-3" href="register.php">Registrati</a>
-                            </li>
-                        <?php else: ?>
-                            <li class="nav-item"><a class="nav-link" href="profile.php?Username=<?= $player['Username'] ?>">Statistiche</a></li>
-                            <li class="nav-item d-flex align-items-center gap-2">
-                                <img
-                                    id="navbarAvatar"
-                                    class="navbar-avatar"
-                                    src="<?= $player["Image"] ?>"
-                                    alt="Avatar utente" />
-                                <a href="php/logout.php" class="btn btn-danger btn-sm px-3">Esci</a>
-                            </li>
-                        <?php endif; ?>
-
+                        <!-- Popolato da js/auth.js -->
                     </ul>
                 </div>
             </div>
@@ -136,10 +78,11 @@ try {
                                 <th>Avatar</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody id="players-tbody"></tbody>
                     </table>
                 </div>
             </div>
+        </div>
     </main>
 
     <footer class="text-center mt-5">

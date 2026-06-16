@@ -17,7 +17,6 @@ let sessionSaved = false;
 let totalWinGame = 0;
 let totalLoseGame = 0;
 let totalDrawGame = 0;
-let finalResults;
 
 const directions = [
     { x: -400, y: -600, r: 90 },
@@ -25,36 +24,55 @@ const directions = [
     { x: 0, y: -700, r: 180 }
 ];
 
-$(() => {
-    ShowHideLoader();
-    initGame();
-    bindEvents();
+let token = localStorage.getItem('token');
 
-    let player = JSON.parse($("main").attr("data-playerCards"));
-    let dealer = JSON.parse($("main").attr("data-dealerCards"));
-    let bet = $("main").attr("data-Bet");
-    Bet = bet;
-    if (player.length > 0 && dealer.length > 0 && bet > 0) {
-        player.forEach(card => {
-            playerCards.push(card);
-            drawnCards.push(card);
-        });
-        dealer.forEach(card => {
-            dealerCards.push(card);
-            drawnCards.push(card);
-        })
-        ResumeGame();
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!token) {
+        window.location.href = "login.html?error=Devi essere loggato per giocare!";
+        return;
     }
+    ShowHideLoader();
+    await initGame();
+    bindEvents();
 });
 
-function initGame() {
-    playerFiches = parseInt($("main").attr("data-fiches")) || 0;
-    if (playerFiches === 0) {
-        toggleBetControls(true);
-        noFish = true;
+async function apiFetch(url, method = 'GET', body = null) {
+    const options = {
+        method: method,
+        headers: {
+            'Session-Id': token,
+            'Content-Type': 'application/json'
+        }
+    };
+    if (body) {
+        options.body = JSON.stringify(body);
     }
-    noFish = false;
-    SetTable();
+    const res = await fetch(url, options);
+    return res.json();
+}
+
+async function initGame() {
+    try {
+        const response = await apiFetch('api/user/profile.php');
+        if (response.success && response.data) {
+            playerFiches = parseInt(response.data.Fiches) || 0;
+            if (response.data.Image) {
+                $('#player-avatar').attr('src', response.data.Image);
+            }
+            if (playerFiches === 0) {
+                toggleBetControls(true);
+                noFish = true;
+            }
+            noFish = false;
+            await SetTable();
+        } else {
+            alert("Errore caricamento profilo: " + response.error);
+            window.location.href = "login.html";
+        }
+    } catch (e) {
+        console.error(e);
+        window.location.href = "login.html";
+    }
 }
 
 function bindEvents() {
@@ -63,13 +81,13 @@ function bindEvents() {
     $("#hit-btn").click(HitCard);
     $("#stand-btn").click(dealerPlay);
     $("#same-bet-btn").click(() => StartGame());
-    $("#return-home-btn").click(() => window.location.href = "index.php");
+    $("#return-home-btn").click(() => window.location.href = "index.html");
     $("#double-btn").click(DoubleBet);
-    $("#session-end").click(() => {
-        SaveSessionGame();
+    $("#session-end").click(async () => {
+        await SaveSessionGame();
         setTimeout(() => {
             const params = new URLSearchParams({ message: "Partita registrata nelle statistiche con successo !" });
-            window.location.href = "index.php?" + params.toString();
+            window.location.href = "index.html?" + params.toString();
         }, 500);
     });
     $(".bet-option").click(handleBetOption);
@@ -89,13 +107,15 @@ function handleBetOption() {
         $("#bet-input").val(playerFiches);
     }
 }
-function SetTable() {
+
+async function SetTable() {
     ShowHideLoader();
-    let request = SendRequest("get", "php/get_levels.php");
-    request.done((response) => {
+    try {
+        const response = await fetch('api/game/levels.php');
+        const data = await response.json();
         ShowHideLoader();
-        if (response.success) {
-            response.data.forEach(table => {
+        if (data.success) {
+            data.data.forEach(table => {
                 if (playerFiches >= table.MinFiches) {
                     $("#current-table").text(table.Name);
                     $(".bg-game").css({
@@ -104,12 +124,13 @@ function SetTable() {
                     });
                 }
             });
-        } else {
-            alert("Errore: " + response.error);
         }
-    });
-    request.fail(error);
+    } catch (e) {
+        ShowHideLoader();
+        console.error(e);
+    }
 }
+
 function showLevelMessage(text) {
     const message = document.getElementById("level-message");
     const overlay = document.getElementById("level-overlay");
@@ -123,21 +144,15 @@ function showLevelMessage(text) {
         message.classList.add("d-none");
     }, 4000);
 }
-function SaveSessionGame() {
-    if (sessionSaved)
-        return;
+
+async function SaveSessionGame() {
+    if (sessionSaved) return;
     sessionSaved = true;
 
     if (totalWinGame + totalDrawGame + totalLoseGame != 0) {
         const finalScore = playerFiches;
         const difference = finalScore - initialplayerFiches;
-        let message;
-
-        if (difference >= 0) {
-            message = `VINCITA: ${difference}`;
-        } else {
-            message = `PERDITA: ${Math.abs(difference)}`;
-        }
+        let message = difference >= 0 ? `VINCITA: ${difference}` : `PERDITA: ${Math.abs(difference)}`;
 
         const data = {
             totalWins: totalWinGame,
@@ -147,24 +162,21 @@ function SaveSessionGame() {
         };
 
         ShowHideLoader();
-        let request = SendRequest("post", "php/save_game.php", data);
-        request.done((response) => {
+        try {
+            const response = await apiFetch('api/game/save_game.php', 'POST', data);
             ShowHideLoader();
             if (response.success) {
                 totalWinGame = 0;
                 totalDrawGame = 0;
                 totalLoseGame = 0;
-            } else {
-                alert("Errore: " + response.error);
             }
-        });
-
-        request.fail((jqXHR) => {
+        } catch(e) {
             ShowHideLoader();
-            error(jqXHR);
-        });
+            console.error(e);
+        }
     }
 }
+
 function DrawCard(who, hidden = false) {
     if (playerCards.length == 2) {
         $("#double-btn").prop("disabled", true);
@@ -187,8 +199,8 @@ function DrawCard(who, hidden = false) {
     }
 
     let cardName = GetCardName(card);
-
     let cardHtml;
+
     if (who === "dealer" && hidden) {
         dealerHiddenCard = card;
         card.cardId = "hidden-card";
@@ -205,29 +217,20 @@ function DrawCard(who, hidden = false) {
     }
 
     StartCardAnimation(card);
-    let request = SendRequest("post", "php/save_hand.php", { player: playerCards, dealer: dealerCards, bet: Bet, initialFiches: initialplayerFiches });
-    request.fail();
 }
-function AnimateCard(cardId) {
-    const card = document.getElementById(cardId);
-    const rand = directions[Math.floor(Math.random() * directions.length)];
 
-    card.style.transition = "none";
-    card.style.transform = `translateX(${rand.x}px) translateY(${rand.y}px) rotateX(${rand.r}deg)`;
-    card.style.opacity = "0";
-
+function StartCardAnimation(card) {
     setTimeout(() => {
-        card.style.transition = "transform 0.6s ease, opacity 0.6s ease";
-        card.style.transform = "translateX(0) translateY(0) rotateX(0)";
-        card.style.opacity = "1";
-    }, 50);
-
-    setTimeout(() => {
-        card.style.transition = "";
-        card.style.transform = "";
-        card.style.opacity = "";
-    }, 700);
+        const cardElem = document.getElementById(card.cardId);
+        if (cardElem) {
+            void cardElem.offsetWidth;
+            setTimeout(() => {
+                cardElem.classList.remove("fly-in");
+            }, 200);
+        }
+    }, 0);
 }
+
 function GetCardName(card) {
     switch (parseInt(card.value)) {
         case 1: return "ace";
@@ -237,6 +240,7 @@ function GetCardName(card) {
         default: return card.value;
     }
 }
+
 function CalculateSum(cards) {
     let sum = 0, aces = 0;
     cards.forEach(({ value }) => {
@@ -254,9 +258,9 @@ function CalculateSum(cards) {
         sum -= 10;
         aces--;
     }
-
     return sum;
 }
+
 function HitCard() {
     if (!gameInProgress) return;
     DrawCard("player");
@@ -265,6 +269,7 @@ function HitCard() {
         UpdateScore("Hai fatto più di 21, Hai perso!", "red", "danger");
     }
 }
+
 function dealerPlay() {
     if (!gameInProgress) return;
 
@@ -291,6 +296,7 @@ function dealerPlay() {
 
     CheckWinner(playerSum, dealerSum);
 }
+
 function RevealHiddenCard() {
     if (dealerHiddenCard) {
         let name = GetCardName(dealerHiddenCard);
@@ -302,6 +308,7 @@ function RevealHiddenCard() {
         dealerHiddenCard = null;
     }
 }
+
 function CheckWinner(player, dealer) {
     if (dealer > 21 || player > dealer) {
         UpdateScore("Il banco ha fatto " + dealer + ", Hai vinto!", "lightgreen", "win");
@@ -311,20 +318,21 @@ function CheckWinner(player, dealer) {
         UpdateScore("Pareggio!", "orange", "draw");
     }
 }
-function UpdateScore(message, color, result = null) {
-    if (color)
-        $("#score").css("color", color);
+
+async function UpdateScore(message, color, result = null) {
+    if (color) $("#score").css("color", color);
 
     let dataToSend = { Bet: Bet, result: result };
     ShowHideLoader();
-    let request = SendRequest("post", "php/update_score.php", dataToSend);
-
-    request.done((data) => {
+    try {
+        const data = await apiFetch('api/game/update_score.php', 'POST', dataToSend);
         ShowHideLoader();
+        
         if (!data.success) {
             alert("Errore server: " + data.error);
             return;
         }
+        
         if (result === "win") {
             Bet = Bet * 2;
             $("#score-text").html(`<h2>Totale vincita: <span id="score">${Bet}</span></h2>`);
@@ -345,36 +353,29 @@ function UpdateScore(message, color, result = null) {
         }
 
         let beforeFish = playerFiches;
-        playerFiches = data.Fiches;
-        if (playerFiches != 0)
-            noFish = false;
-        else
-            noFish = true;
+        playerFiches = data.data && data.data.Fiches !== undefined ? data.data.Fiches : data.Fiches || playerFiches;
+        noFish = (playerFiches == 0);
+        
         $("#profit-text").html(`<h2>Punteggio aggiornato : <span id='profit'>${playerFiches}</span></h2>`);
         $("#score").css("color", color);
         $("#profit").css("color", color);
 
         RevealHiddenCard();
 
-        let type;
-        if (result === "win" || result === "double-win") {
-            type = "win";
-        } else if (result === "danger" || result === "double-danger") {
-            type = "danger";
-        } else {
-            type = "draw";
-        }
+        let type = (result === "win" || result === "double-win") ? "win" : 
+                   (result === "danger" || result === "double-danger") ? "danger" : "draw";
 
-        ShowAlert(message, type);
-        CheckLvlTable(beforeFish);
+        if (typeof ShowAlert === 'function') ShowAlert(message, type);
+        else alert(message);
+
+        await CheckLvlTable(beforeFish);
         endGame();
-    });
-
-    request.fail((jqXHR) => {
+    } catch(e) {
         ShowHideLoader();
-        error(jqXHR);
-    });
+        console.error(e);
+    }
 }
+
 function getLevelByFish(fish, levels) {
     let levelIndex = 0;
     for (let i = 0; i < levels.length; i++) {
@@ -386,28 +387,27 @@ function getLevelByFish(fish, levels) {
     }
     return levelIndex;
 }
-function CheckLvlTable(beforeFish) {
-    ShowHideLoader();
-    let request = SendRequest("get", "php/get_levels.php");
 
-    request.done((response) => {
+async function CheckLvlTable(beforeFish) {
+    ShowHideLoader();
+    try {
+        const response = await fetch('api/game/levels.php');
+        const data = await response.json();
         ShowHideLoader();
-        if (!response.success) {
-            console.error("Errore nel recupero livelli: " + response.error);
+        
+        if (!data.success) {
+            console.error("Errore nel recupero livelli: " + data.error);
             return;
         }
 
-        let levels = response.data;
+        let levels = data.data;
         levels.sort((a, b) => parseInt(a.MinFiches) - parseInt(b.MinFiches));
 
         let oldLevelIndex = getLevelByFish(beforeFish, levels);
         let newLevelIndex = getLevelByFish(playerFiches, levels);
 
         let levelData = levels[newLevelIndex];
-        if (!levelData) {
-            console.error("Livello non trovato.");
-            return;
-        }
+        if (!levelData) return;
 
         let tableName = levelData.Name;
         let bgUrl = levelData.ImagePath;
@@ -422,31 +422,27 @@ function CheckLvlTable(beforeFish) {
             showLevelMessage("Hai sbloccato " + tableName + "!");
         } else if (newLevelIndex < oldLevelIndex) {
             showLevelMessage("Sei tornato a " + tableName);
-        } else {
-            return;
         }
 
-        let updateRequest = SendRequest("post", "php/update_lvl.php", {
-            newLevel: newLevelIndex,
-            oldLevel: oldLevelIndex
-        });
-
-        updateRequest.fail(error);
-    });
-
-    request.fail(error);
+        if (newLevelIndex !== oldLevelIndex) {
+            await apiFetch('api/game/update_lvl.php', 'POST', {
+                newLevel: newLevelIndex,
+                oldLevel: oldLevelIndex
+            });
+        }
+    } catch(e) {
+        ShowHideLoader();
+        console.error(e);
+    }
 }
 
 function endGame() {
-    let request = SendRequest("post", "php/save_hand.php", { "endGame": true });
-    request.done(() => {
-        gameInProgress = false;
-        $("#alert-end-game").remove();
-        showActions();
-        $(".fly-in").removeClass("fly-in");
-    })
-    request.fail();
+    gameInProgress = false;
+    $("#alert-end-game").remove();
+    showActions();
+    $(".fly-in").removeClass("fly-in");
 }
+
 function showActions() {
     if (noFish) {
         $("#same-bet-btn").text("Punta 32");
@@ -458,14 +454,17 @@ function showActions() {
     $("#same-bet-btn, #session-end, #new-bet-btn").removeClass("d-none");
     $("#hit-btn, #stand-btn, #double-btn").addClass("d-none");
 }
+
 function hideActions() {
     $("#same-bet-btn, #session-end, #new-bet-btn").addClass("d-none");
     $("#hit-btn, #stand-btn, #double-btn").removeClass("d-none");
 }
+
 function hideAll() {
     $("#hit-btn, #stand-btn").addClass("d-none");
     $("#same-bet-btn, #session-end, #new-bet-btn").addClass("d-none");
 }
+
 function DoubleBet() {
     if (!gameInProgress) return;
 
@@ -497,105 +496,44 @@ function DoubleBet() {
     gameInProgress = false;
     showActions();
 }
-function ResumeGame() {
-    if (playerCards.length == 2) {
-        $("#double-btn").prop("disabled", true);
-    }
-    $("#player, #dealer").empty();
-    $("#start-game-btn").addClass("d-none");
-    $("#overlay").addClass("d-none");
-    $("#game-container").addClass("no-blur");
-    $("#bet-input-container").addClass("d-none");
-    $("#double-btn").attr("disabled", false);
-    gameInProgress = true;
 
-    let results = SendRequest("GET", "php/get_user.php");
-    results.done((data) => {
-        initialplayerFiches = data.data.Fiches;
-        $("#profit-text").html(`<h2>Punti disponibili: <span id='profit'>${playerFiches}</span></h2>`);
-        $("#score-text").html(`<h2>Puntata attuale: <span id="score">${Bet}</span></h2>`);
-        hideActions();      
-        playerCards.forEach(card => {
-            let cardName = GetCardName(card);
-            const imgSrc = `${cardPath}${cardName}_of_${card.suit}.png`;
-            const cardDiv = `<div class="card ${card.suit} fly-in" id="${card.cardId}">
-                                <img src="${imgSrc}" alt="${cardName} of ${card.suit}">
-                             </div>`;
-            $("#player").append(cardDiv);
-            StartCardAnimation(card);
-        });
-        dealerCards.forEach(card => {
-            let cardName = GetCardName(card);
-            let cardDiv;
-
-            if (card.cardId === "hidden-card") {
-                dealerHiddenCard = card;
-                cardDiv = `<div class="card back fly-in" id="${card.cardId}">
-                               <img src='${cardPath}carta_coperta.png' alt="Hidden card">
-                           </div>`;
-            } else {
-                const imgSrc = `${cardPath}${cardName}_of_${card.suit}.png`;
-                cardDiv = `<div class="card ${card.suit} fly-in" id="${card.cardId}">
-                               <img src="${imgSrc}" alt="${cardName} of ${card.suit}">
-                           </div>`;
-            }
-            $("#dealer").append(cardDiv);
-            StartCardAnimation(card);
-        });
-    })
-    results.fail(error);
-}
-
-function StartCardAnimation(card) {
-    const cardElem = document.getElementById(card.cardId);
-    void cardElem.offsetWidth;
-
-    setTimeout(() => {
-        const cardElem = document.getElementById(card.cardId);
-        if (cardElem) {
-            void cardElem.offsetWidth;
-            setTimeout(() => {
-                cardElem.classList.remove("fly-in");
-            }, 200);
-        }
-    }, 0);
-}
-function StartGame() {
+async function StartGame() {
     let betValue = parseInt($("#bet-input").val());
     ShowHideLoader();
-    let results = SendRequest("GET", "php/get_user.php");
-    results.done((data) => {
+    try {
+        const data = await apiFetch('api/user/profile.php');
         ShowHideLoader();
         if (!data.success) {
-            ShowAlert("Errore: " + data.error, "danger");
+            if (typeof ShowAlert === 'function') ShowAlert("Errore: " + data.error, "danger");
             return;
         }
 
         let userData = data.data;
-
         initialplayerFiches = userData.Fiches;
         hideAll();
+
         if (userData.Fiches > 0) {
             if (isNaN(betValue) || betValue <= 0) {
-                ShowAlert("Devi inserire un valore di scommessa valido", "danger");
+                if (typeof ShowAlert === 'function') ShowAlert("Devi inserire un valore di scommessa valido", "danger");
                 showOverlay();
                 return;
             }
             if (betValue > userData.Fiches) {
-                ShowAlert("Non puoi scommettere più di ciò che possiedi, in questo momento possiedi " + userData.Fiches + " Punti", "danger");
+                if (typeof ShowAlert === 'function') ShowAlert("Non puoi scommettere più di ciò che possiedi, in questo momento possiedi " + userData.Fiches + " Punti", "danger");
                 showOverlay();
                 return;
             }
-
             noFish = false;
         } else {
-            $("#bet-input").val(32)
+            $("#bet-input").val(32);
             betValue = 32;
             noFish = true;
         }
+        
         Bet = betValue;
         $("#profit-text").html(`<h2>Punti disponibili: <span id='profit'>${playerFiches}</span></h2>`);
         $("#score-text").html(`<h2>Puntata attuale: <span id="score">${Bet}</span></h2>`);
+        
         playerCards = [];
         dealerCards = [];
         drawnCards = [];
@@ -625,8 +563,10 @@ function StartGame() {
         setTimeout(() => {
             hideActions();
         }, 3200);
+        
         $("#score").css("color", "white");
         $("#profit").css("color", "white");
+        
         setTimeout(() => {
             let playerSum = CalculateSum(playerCards);
             if (playerSum === 21) {
@@ -634,20 +574,12 @@ function StartGame() {
             }
         }, 3300);
 
-    });
-    results.fail(error);
+    } catch (e) {
+        ShowHideLoader();
+        console.error(e);
+    }
 }
-function showOverlay() {
-    $("#start-game-btn").removeClass("d-none");
-    $("#overlay").removeClass("d-none");
-    $("#game-container").removeClass("no-blur");
-    $("#bet-input-container").removeClass("d-none");
-    $("#current-score").text(playerFiches);
-    if (playerFiches != 0)
-        ["#lbl-bet", "#bet-input", "#bet-btn"].forEach(sel => $(sel).removeClass("d-none"));
-    else
-        toggleBetControls(true);
-}
+
 function CardAlreadyDrawn(card) {
     return drawnCards.some(c =>
         c.suit === card.suit && c.value === card.value

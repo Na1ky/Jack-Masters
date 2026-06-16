@@ -1,15 +1,48 @@
 const apiKey = "350edb9f05085e05a6639a93b38f5b6e";
-$(() => {
+document.addEventListener('DOMContentLoaded', async () => {
     ShowHideLoader();
-    
-    const btnEdit = $('#btn-edit');
-    const btnCancel = $('#btn-cancel');
-    const profileView = $('#profile-view');
-    const profileEdit = $('#profile-edit');
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const response = await fetch('api/user/profile.php', {
+            headers: { 'Session-Id': token }
+        });
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            const player = result.data;
+            
+            document.getElementById('profile-title').textContent = "Profilo Giocatore: " + player.Username;
+            document.getElementById('card-username-title').innerHTML = `<i class="bi bi-person-circle"></i> ` + player.Username;
+            
+            if (player.Name) document.getElementById('view-nome').textContent = player.Name;
+            if (player.Surname) document.getElementById('view-cognome').textContent = player.Surname;
+            document.getElementById('view-fiches').textContent = Number(player.Fiches).toLocaleString();
+            document.getElementById('view-current-lvl').textContent = player.Lvl || "0";
+            document.getElementById('view-top-lvl').textContent = player.TopLevel || "0";
+            
+            const profileImg = document.getElementById('profile-image');
+            profileImg.src = player.Image || "img/default.png";
+            document.getElementById('image-settings').dataset.player = player.Username;
+
+            // We do not have games data from this endpoint in the new API.
+            // But we will initialize an empty DataTable.
+            InitializeTable([]);
+        } else {
+            if (typeof ShowAlert === 'function') ShowAlert(result.error || "Errore nel caricamento del profilo", "danger");
+        }
+    } catch (e) {
+        console.error("Errore fetch profile:", e);
+        InitializeTable([]);
+    }
+
     const profileImage = $("#profile-image");
     const fileInput = $('#file-input');
-    const gamesData = JSON.parse($('#games-table').attr('data-games'));
-    InitializeTable(gamesData);
 
     profileImage.on('click', () => {
         fileInput.trigger('click');
@@ -31,28 +64,19 @@ $(() => {
                     .done(response => {
                         if (response.success) {
                             const username = $('#image-settings').attr('data-player');
+                            // Replace with proper API or leave as is if backend handles it
                             SendRequest("POST","php/update_profile_image.php", {newImage: response.data.url, user: username})
                             .done(() => {
                                 ShowAlert("Immagine aggiornata con successo!");
-                            }).fail(error);
+                            }).fail(error => console.error(error));
                         } else {
                             console.error('Errore upload:', response);
                         }
                     })
-                    .fail(error);
+                    .fail(error => console.error(error));
             });
         }
     });    
-
-    btnEdit.on('click', () => {
-        profileView.hide();
-        profileEdit.show();
-    });
-
-    btnCancel.on('click', () => {
-        profileEdit.hide();
-        profileView.show();
-    });
 });
 
 function InitializeTable(gamesData){
@@ -60,11 +84,11 @@ function InitializeTable(gamesData){
         responsive: true,
         data: gamesData,
         columns: [
-            { data: 'Date', title: 'Data' },
-            { data: 'Results', title: 'Esito' },
-            { data: 'Wins', title: 'Vittorie' },
-            { data: 'Loses', title: 'Perse' },
-            { data: 'Draw', title: 'Pareggi' }
+            { data: 'Date', title: 'Data', defaultContent: '' },
+            { data: 'Results', title: 'Esito', defaultContent: '' },
+            { data: 'Wins', title: 'Vittorie', defaultContent: '0' },
+            { data: 'Loses', title: 'Perse', defaultContent: '0' },
+            { data: 'Draw', title: 'Pareggi', defaultContent: '0' }
         ],
         order: [[0, 'desc']],
         pageLength: 5,
