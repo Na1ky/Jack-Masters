@@ -67,6 +67,13 @@ async function initGame() {
     }
 }
 
+function showOverlay() {
+    $("#start-game-btn").removeClass("d-none");
+    $("#overlay").removeClass("d-none");
+    $("#game-container").removeClass("no-blur");
+    $("#bet-input-container").removeClass("d-none");
+}
+
 function bindEvents() {
     $("#new-bet-btn").click(showOverlay);
     $("#start-game-btn").click(StartGame);
