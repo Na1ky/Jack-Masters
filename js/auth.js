@@ -55,12 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = Object.fromEntries(formData.entries());
             
             try {
-                const response = await fetch('api/auth/login.php', {
+                const result = await WithLoader(() => ApiRequest('api/auth/login.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
-                });
-                const result = await response.json();
+                }));
                 
                 if (result.success) {
                     localStorage.setItem('token', result.data.sessionId);
@@ -74,7 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error(err);
-                alert("Errore di connessione.");
+                if (typeof ShowAlert === 'function') {
+                    ShowAlert(err.message || "Errore di connessione.", "danger");
+                } else {
+                    alert(err.message || "Errore di connessione.");
+                }
             }
         });
     }
@@ -92,12 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = Object.fromEntries(formData.entries());
             
             try {
-                const response = await fetch('api/auth/register.php', {
+                const result = await WithLoader(() => ApiRequest('api/auth/register.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
-                });
-                const result = await response.json();
+                }));
                 
                 if (result.success) {
                     localStorage.setItem('token', result.data.sessionId);
@@ -111,7 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error(err);
-                alert("Errore di connessione.");
+                if (typeof ShowAlert === 'function') {
+                    ShowAlert(err.message || "Errore di connessione.", "danger");
+                } else {
+                    alert(err.message || "Errore di connessione.");
+                }
             }
         });
     }

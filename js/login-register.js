@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    ShowHideLoader();
-
     try {
-        const response = await fetch('api/game/levels.php');
-        const data = await response.json();
+        const data = await WithLoader(() => ApiRequest('api/game/levels.php'));
         if (data.success && data.data.length > 0) {
             const levels = data.data;
             const randomIndex = Math.floor(Math.random() * levels.length);
@@ -21,12 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function ShowHidePassword() {
-    const input = $("#password-input");
     const isChecked = $(this).is(":checked");
-
-    if (isChecked) {
-        input.attr("type", "text");
-    } else {
-        input.attr("type", "password");
-    }
+    $(".js-password-field, #password-input").attr("type", isChecked ? "text" : "password");
 }

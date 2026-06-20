@@ -9,6 +9,7 @@ services:
       DB_USER: blackjack
       DB_PASS: blackjack
       DB_NAME: blackjack
+      DB_SSL: "false"
     depends_on:
       db:
         condition: service_healthy

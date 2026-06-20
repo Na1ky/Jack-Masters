@@ -1,24 +1,17 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    ShowHideLoader();
-
     const token = localStorage.getItem('token');
     let player = null;
 
     // Fetch user profile if logged in
     if (token) {
         try {
-            const profileResponse = await fetch('api/user/profile.php', {
-                headers: { 'Session-Id': token }
-            });
-            const profileData = await profileResponse.json();
+            const profileData = await WithLoader(() => ApiRequest('api/user/profile.php'));
             if (profileData.success) {
                 player = profileData.data;
-            } else {
-                // Token invalid or expired
-                localStorage.removeItem('token');
-                if (typeof ShowAlert === 'function') ShowAlert("Sessione scaduta", "danger");
             }
         } catch (e) {
+            localStorage.removeItem('token');
+            if (typeof ShowAlert === 'function') ShowAlert("Sessione scaduta", "danger");
             console.error("Errore fetch profilo:", e);
         }
     }
@@ -49,8 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Fetch levels
     try {
-        const levelsResponse = await fetch('api/game/levels.php');
-        const levelsData = await levelsResponse.json();
+        const levelsData = await WithLoader(() => ApiRequest('api/game/levels.php'));
         if (levelsData.success && levelsData.data.length > 0) {
             const levels = levelsData.data;
             const container = document.getElementById('level-thumbnails-container');

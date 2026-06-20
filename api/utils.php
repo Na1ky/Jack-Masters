@@ -16,21 +16,31 @@ function initApi() {
 }
 
 function getSessionIdFromHeaders() {
-    $headers = apache_request_headers();
+    if (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+    } else {
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
+            if (strpos($key, 'HTTP_') === 0) {
+                $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+                $headers[$name] = $value;
+            }
+        }
+    }
     
-    if (isset($headers['Authorization'])) {
+    $authorization = $headers['Authorization'] ?? $headers['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? null);
+    if ($authorization) {
         $matches = array();
-        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
+        if (preg_match('/Bearer\s(\S+)/', $authorization, $matches)) {
             return $matches[1];
         }
     }
     
     // Fallback on custom header
-    if (isset($headers['Session-Id'])) {
-        return $headers['Session-Id'];
-    }
-
-    return null;
+    return $headers['Session-Id']
+        ?? $headers['session-id']
+        ?? $headers['Session-id']
+        ?? ($_SERVER['HTTP_SESSION_ID'] ?? null);
 }
 
 function sendJsonResponse($success, $data = null, $message = null, $statusCode = 200) {

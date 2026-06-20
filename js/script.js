@@ -1,10 +1,76 @@
-function ShowHideLoader() {
-    const loader = document.querySelector(".loader");
-    if (loader.classList.contains("loader-hidden")) {
-        loader.classList.remove("loader-hidden");
-    }
-    else
+let loaderRequests = 0;
+
+function getLoader() {
+    return document.querySelector(".loader");
+}
+
+function ShowLoader() {
+    const loader = getLoader();
+    if (!loader) return;
+
+    loaderRequests += 1;
+    loader.classList.remove("loader-hidden");
+    loader.setAttribute("aria-busy", "true");
+}
+
+function HideLoader(force = false) {
+    const loader = getLoader();
+    if (!loader) return;
+
+    loaderRequests = force ? 0 : Math.max(0, loaderRequests - 1);
+    if (loaderRequests === 0) {
         loader.classList.add("loader-hidden");
+        loader.setAttribute("aria-busy", "false");
+    }
+}
+
+function ShowHideLoader(show) {
+    if (typeof show === "boolean") {
+        show ? ShowLoader() : HideLoader();
+        return;
+    }
+
+    const loader = getLoader();
+    if (!loader) return;
+    loader.classList.contains("loader-hidden") ? ShowLoader() : HideLoader(true);
+}
+
+async function WithLoader(task) {
+    ShowLoader();
+    try {
+        return await task();
+    } finally {
+        HideLoader();
+    }
+}
+
+async function ApiRequest(url, options = {}) {
+    const token = localStorage.getItem("token");
+    const headers = new Headers(options.headers || {});
+
+    if (token && !headers.has("Session-Id")) {
+        headers.set("Session-Id", token);
+    }
+
+    if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
+
+    const response = await fetch(url, { ...options, headers });
+    const rawText = await response.text();
+    let payload = null;
+
+    try {
+        payload = rawText ? JSON.parse(rawText) : {};
+    } catch (e) {
+        throw new Error("Risposta del server non valida.");
+    }
+
+    if (!response.ok || payload.success === false) {
+        throw new Error(payload.message || payload.error || `Errore server (${response.status})`);
+    }
+
+    return payload;
 }
 
 function ShowAlert(message, type = 'info') {
@@ -47,6 +113,8 @@ function SendRequest(method, url, parameters = {}, isFormData = false) {
         contentType = false;
     }
 
+    ShowLoader();
+
     return $.ajax({
         url: url,
         type: method,
@@ -55,7 +123,7 @@ function SendRequest(method, url, parameters = {}, isFormData = false) {
         timeout: 5000,
         processData: processData,
         contentType: contentType
-    });
+    }).always(() => HideLoader());
 }
 function error(jqXHR) {
     if (jqXHR.status == 0)

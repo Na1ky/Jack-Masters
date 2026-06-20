@@ -31,29 +31,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = "login.html?error=Devi essere loggato per giocare!";
         return;
     }
-    ShowHideLoader();
     await initGame();
     bindEvents();
 });
 
 async function apiFetch(url, method = 'GET', body = null) {
-    const options = {
+    return ApiRequest(url, {
         method: method,
-        headers: {
-            'Session-Id': token,
-            'Content-Type': 'application/json'
-        }
-    };
-    if (body) {
-        options.body = JSON.stringify(body);
-    }
-    const res = await fetch(url, options);
-    return res.json();
+        body: body ? JSON.stringify(body) : null
+    });
 }
 
 async function initGame() {
     try {
-        const response = await apiFetch('api/user/profile.php');
+        const response = await WithLoader(() => apiFetch('api/user/profile.php'));
         if (response.success && response.data) {
             playerFiches = parseInt(response.data.Fiches) || 0;
             if (response.data.Image) {
@@ -62,11 +53,12 @@ async function initGame() {
             if (playerFiches === 0) {
                 toggleBetControls(true);
                 noFish = true;
+            } else {
+                noFish = false;
             }
-            noFish = false;
             await SetTable();
         } else {
-            alert("Errore caricamento profilo: " + response.error);
+            alert("Errore caricamento profilo: " + (response.error || response.message));
             window.location.href = "login.html";
         }
     } catch (e) {
@@ -109,11 +101,8 @@ function handleBetOption() {
 }
 
 async function SetTable() {
-    ShowHideLoader();
     try {
-        const response = await fetch('api/game/levels.php');
-        const data = await response.json();
-        ShowHideLoader();
+        const data = await WithLoader(() => ApiRequest('api/game/levels.php'));
         if (data.success) {
             data.data.forEach(table => {
                 if (playerFiches >= table.MinFiches) {
@@ -126,8 +115,8 @@ async function SetTable() {
             });
         }
     } catch (e) {
-        ShowHideLoader();
         console.error(e);
+        if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore nel caricamento dei tavoli", "danger");
     }
 }
 
@@ -161,18 +150,16 @@ async function SaveSessionGame() {
             message: message
         };
 
-        ShowHideLoader();
         try {
-            const response = await apiFetch('api/game/save_game.php', 'POST', data);
-            ShowHideLoader();
+            const response = await WithLoader(() => apiFetch('api/game/save_game.php', 'POST', data));
             if (response.success) {
                 totalWinGame = 0;
                 totalDrawGame = 0;
                 totalLoseGame = 0;
             }
         } catch(e) {
-            ShowHideLoader();
             console.error(e);
+            if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore nel salvataggio della sessione", "danger");
         }
     }
 }
@@ -323,13 +310,11 @@ async function UpdateScore(message, color, result = null) {
     if (color) $("#score").css("color", color);
 
     let dataToSend = { Bet: Bet, result: result };
-    ShowHideLoader();
     try {
-        const data = await apiFetch('api/game/update_score.php', 'POST', dataToSend);
-        ShowHideLoader();
+        const data = await WithLoader(() => apiFetch('api/game/update_score.php', 'POST', dataToSend));
         
         if (!data.success) {
-            alert("Errore server: " + data.error);
+            alert("Errore server: " + (data.error || data.message));
             return;
         }
         
@@ -371,8 +356,8 @@ async function UpdateScore(message, color, result = null) {
         await CheckLvlTable(beforeFish);
         endGame();
     } catch(e) {
-        ShowHideLoader();
         console.error(e);
+        if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore durante l'aggiornamento del punteggio", "danger");
     }
 }
 
@@ -389,14 +374,11 @@ function getLevelByFish(fish, levels) {
 }
 
 async function CheckLvlTable(beforeFish) {
-    ShowHideLoader();
     try {
-        const response = await fetch('api/game/levels.php');
-        const data = await response.json();
-        ShowHideLoader();
+        const data = await WithLoader(() => ApiRequest('api/game/levels.php'));
         
         if (!data.success) {
-            console.error("Errore nel recupero livelli: " + data.error);
+            console.error("Errore nel recupero livelli: " + (data.error || data.message));
             return;
         }
 
@@ -431,8 +413,8 @@ async function CheckLvlTable(beforeFish) {
             });
         }
     } catch(e) {
-        ShowHideLoader();
         console.error(e);
+        if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore nel controllo del livello", "danger");
     }
 }
 
@@ -499,12 +481,10 @@ function DoubleBet() {
 
 async function StartGame() {
     let betValue = parseInt($("#bet-input").val());
-    ShowHideLoader();
     try {
-        const data = await apiFetch('api/user/profile.php');
-        ShowHideLoader();
+        const data = await WithLoader(() => apiFetch('api/user/profile.php'));
         if (!data.success) {
-            if (typeof ShowAlert === 'function') ShowAlert("Errore: " + data.error, "danger");
+            if (typeof ShowAlert === 'function') ShowAlert("Errore: " + (data.error || data.message), "danger");
             return;
         }
 
@@ -575,8 +555,8 @@ async function StartGame() {
         }, 3300);
 
     } catch (e) {
-        ShowHideLoader();
         console.error(e);
+        if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore durante l'avvio della partita", "danger");
     }
 }
 

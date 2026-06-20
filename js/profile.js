@@ -1,21 +1,23 @@
 const apiKey = "350edb9f05085e05a6639a93b38f5b6e";
 document.addEventListener('DOMContentLoaded', async () => {
-    ShowHideLoader();
-
     const token = localStorage.getItem('token');
-    if (!token) {
+    const params = new URLSearchParams(window.location.search);
+    const viewedUsername = params.get('Username');
+
+    if (!token && !viewedUsername) {
         window.location.href = "login.html";
         return;
     }
 
     try {
-        const response = await fetch('api/user/profile.php', {
-            headers: { 'Session-Id': token }
-        });
-        const result = await response.json();
+        const profileUrl = viewedUsername
+            ? `api/user/profile.php?Username=${encodeURIComponent(viewedUsername)}`
+            : 'api/user/profile.php';
+        const result = await WithLoader(() => ApiRequest(profileUrl));
         
         if (result.success && result.data) {
             const player = result.data;
+            const isOwnProfile = !viewedUsername;
             
             document.getElementById('profile-title').textContent = "Profilo Giocatore: " + player.Username;
             document.getElementById('card-username-title').innerHTML = `<i class="bi bi-person-circle"></i> ` + player.Username;
@@ -29,15 +31,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const profileImg = document.getElementById('profile-image');
             profileImg.src = player.Image || "img/default.png";
             document.getElementById('image-settings').dataset.player = player.Username;
+            document.getElementById('image-settings').classList.toggle('editable', isOwnProfile);
+            document.getElementById('file-input').disabled = !isOwnProfile;
+            const editIcon = document.querySelector('.edit-icon');
+            if (editIcon && !isOwnProfile) editIcon.remove();
 
-            // We do not have games data from this endpoint in the new API.
-            // But we will initialize an empty DataTable.
-            InitializeTable([]);
-        } else {
-            if (typeof ShowAlert === 'function') ShowAlert(result.error || "Errore nel caricamento del profilo", "danger");
+            document.getElementById('total-win').textContent = `Vittorie: ${player.TotalWins || 0}`;
+            document.getElementById('total-lose').textContent = `Perse: ${player.TotalLosses || 0}`;
+            InitializeTable(player.Games || []);
         }
     } catch (e) {
         console.error("Errore fetch profile:", e);
+        if (typeof ShowAlert === 'function') ShowAlert(e.message || "Errore nel caricamento del profilo", "danger");
         InitializeTable([]);
     }
 
@@ -45,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = $('#file-input');
 
     profileImage.on('click', () => {
+        if (viewedUsername) return;
         fileInput.trigger('click');
     });
 
@@ -63,12 +69,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 SendRequest("POST", apiUrl, formData, true)
                     .done(response => {
                         if (response.success) {
-                            const username = $('#image-settings').attr('data-player');
-                            // Replace with proper API or leave as is if backend handles it
-                            SendRequest("POST","php/update_profile_image.php", {newImage: response.data.url, user: username})
-                            .done(() => {
+                            WithLoader(() => ApiRequest("api/user/profile_image.php", {
+                                method: "POST",
+                                body: JSON.stringify({ newImage: response.data.url })
+                            })).then(() => {
                                 ShowAlert("Immagine aggiornata con successo!");
-                            }).fail(error => console.error(error));
+                            }).catch(error => {
+                                console.error(error);
+                                ShowAlert(error.message || "Errore durante l'aggiornamento dell'immagine", "danger");
+                            });
                         } else {
                             console.error('Errore upload:', response);
                         }

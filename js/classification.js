@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    ShowHideLoader();
+    const tbody = document.getElementById('players-tbody');
 
     try {
-        const response = await fetch('api/game/classification.php');
-        const data = await response.json();
+        const data = await WithLoader(() => ApiRequest('api/game/classification.php'));
         
         if (data.success && data.data) {
-            const tbody = document.getElementById('players-tbody');
             tbody.innerHTML = '';
             
             // Expected players fields from DB: Posizione, Username, Fiches, CurrentTable, TopTable, Image
@@ -46,6 +44,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (e) {
         console.error("Error fetching classification:", e);
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-warning py-4">
+                        Impossibile caricare la classifica. Riprova tra poco.
+                    </td>
+                </tr>
+            `;
+        }
+        if (typeof ShowAlert === 'function') {
+            ShowAlert(e.message || "Errore nel caricamento della classifica", "danger");
+        }
     }
 
     const table = $('#players-table').DataTable({

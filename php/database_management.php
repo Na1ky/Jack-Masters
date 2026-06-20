@@ -11,12 +11,14 @@ $envDbUser = getenv("DB_USER");
 $envDbPass = getenv("DB_PASS");
 $envDbName = getenv("DB_NAME");
 $envDbPort = getenv("DB_PORT");
+$envDbSsl = getenv("DB_SSL");
 
 define("DBHOST", $envDbHost !== false && $envDbHost !== '' ? $envDbHost : "127.0.0.1");
 define("DBUSER", $envDbUser !== false && $envDbUser !== '' ? $envDbUser : "root");
 define("DBPASS", $envDbPass !== false ? $envDbPass : "");
 define("DBNAME", $envDbName !== false && $envDbName !== '' ? $envDbName : "blackjack");
 define("DBPORT", $envDbPort !== false && $envDbPort !== '' ? (int)$envDbPort : 3306);
+define("DBSSL", $envDbSsl !== false && in_array(strtolower($envDbSsl), ["1", "true", "yes"], true));
 
 function OpenDbConnection($dbName)
 {
@@ -24,9 +26,12 @@ function OpenDbConnection($dbName)
 
     try {
         $connection = mysqli_init();
-        // Set SSL verification to true
-        $connection->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, true);
-        $connection->real_connect(DBHOST, DBUSER, DBPASS, $dbName, DBPORT, NULL, MYSQLI_CLIENT_SSL);
+        if (DBSSL) {
+            $connection->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
+            $connection->real_connect(DBHOST, DBUSER, DBPASS, $dbName, DBPORT, NULL, MYSQLI_CLIENT_SSL);
+        } else {
+            $connection->real_connect(DBHOST, DBUSER, DBPASS, $dbName, DBPORT);
+        }
         $connection->set_charset("utf8");
         return $connection;
     } catch (mysqli_sql_exception $ex) {
@@ -141,7 +146,7 @@ function InsertNewUser($connection, $email, $password, $username)
         $stmt->close();
 
         $defaultImagePath = 'https://i.imgur.com/VCC4UDV.jpeg';
-        $query = "INSERT INTO players (Username, Name, Surname, Fiches, Image, Lvl) VALUES (?, NULL, NULL, 0, ?, 0)";
+        $query = "INSERT INTO players (Username, Name, Surname, Fiches, Image, Lvl, TopLevel) VALUES (?, NULL, NULL, 0, ?, 0, 0)";
         $stmt = $connection->prepare($query);
         if (!$stmt) {
             throw new Exception("Errore nella preparazione della query giocatori: " . $connection->error);
