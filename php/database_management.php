@@ -148,7 +148,7 @@ function InsertNewUser($connection, $email, $password, $username)
         $stmt->execute();
         $stmt->close();
 
-        $defaultImagePath = 'https://i.imgur.com/VCC4UDV.jpeg';
+        $defaultImagePath = 'https://static.vecteezy.com/ti/vettori-gratis/p1/2232212-blackjack-logo-with-green-ribbon-and-on-green-background-isolated-card-game-casino-game-gratuito-vettoriale.jpg';
         $query = "INSERT INTO players (Username, Name, Surname, Fiches, Image, Lvl, TopLevel) VALUES (?, NULL, NULL, 0, ?, 0, 0)";
         $stmt = $connection->prepare($query);
         if (!$stmt) {
