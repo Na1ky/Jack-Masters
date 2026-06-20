@@ -3,7 +3,7 @@ body, html {
     margin: 0;
     padding: 0;
     background: #000;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 *{
@@ -23,7 +23,9 @@ body, html {
 .game-container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+    justify-content: space-between;
     background-size: cover;
     background-position: center;
     color: white;
@@ -48,9 +50,8 @@ main {
 }
 
 .card {
-    width: 60%;
-    max-width: 205px;
-    height: auto;
+    width: auto;
+    max-height: 22vh;
     aspect-ratio: 200 / 260;
     border-radius: 10px;
     background-color: white;
@@ -202,8 +203,8 @@ main {
 
 .row.p-5 {
     margin-top: auto;
-    padding-bottom: 25px;
-
+    padding-bottom: 2vh !important;
+    padding-top: 2vh !important;
 }
 
 .bet-input-container {

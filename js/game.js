@@ -158,7 +158,7 @@ async function SaveSessionGame() {
         };
 
         try {
-            const response = await WithLoader(() => apiFetch('api/game/save_game.php', 'POST', data));
+            const response = await apiFetch('api/game/save_game.php', 'POST', data);
             if (response.success) {
                 totalWinGame = 0;
                 totalDrawGame = 0;
@@ -318,7 +318,7 @@ async function UpdateScore(message, color, result = null) {
 
     let dataToSend = { Bet: Bet, result: result };
     try {
-        const data = await WithLoader(() => apiFetch('api/game/update_score.php', 'POST', dataToSend));
+        const data = await apiFetch('api/game/update_score.php', 'POST', dataToSend);
         
         if (!data.success) {
             alert("Errore server: " + (data.error || data.message));
@@ -382,7 +382,7 @@ function getLevelByFish(fish, levels) {
 
 async function CheckLvlTable(beforeFish) {
     try {
-        const data = await WithLoader(() => ApiRequest('api/game/levels.php'));
+        const data = await ApiRequest('api/game/levels.php');
         
         if (!data.success) {
             console.error("Errore nel recupero livelli: " + (data.error || data.message));
@@ -489,7 +489,7 @@ function DoubleBet() {
 async function StartGame() {
     let betValue = parseInt($("#bet-input").val());
     try {
-        const data = await WithLoader(() => apiFetch('api/user/profile.php'));
+        const data = await apiFetch('api/user/profile.php');
         if (!data.success) {
             if (typeof ShowAlert === 'function') ShowAlert("Errore: " + (data.error || data.message), "danger");
             return;
